@@ -36,4 +36,17 @@ public class BeerController {
         return new ResponseEntity(httpHeaders, HttpStatus.CREATED);
     }
 
+    @PutMapping("/{beerId}")
+    public ResponseEntity<BeerDto> handleUpdate(@PathVariable UUID beerId, @RequestBody BeerDto beerDto) {
+        beerService.updateBeer(beerId, beerDto);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
+
+    // alternative implementation to the UPDATE method; If further headers are needed, the the UPDATE implementation is preferable
+    @DeleteMapping("/{beerId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void handleDelete(@PathVariable UUID beerId) {
+        beerService.deleteBeerById(beerId);
+    }
+
 }
