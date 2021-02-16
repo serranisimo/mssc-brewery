@@ -51,7 +51,7 @@ class BeerControllerTest {
         given(beerService.getBeerById(any(UUID.class))).willReturn(validBeer);
 
         mockMvc.perform(get(API_V_1_BEER + validBeer.getId())
-        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.beerName", Is.is(validBeer.getBeerName())))
                 .andExpect(jsonPath("$.id", Is.is(validBeer.getId().toString())));
 

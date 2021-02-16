@@ -1,7 +1,7 @@
-package guru.springframework.msscbrewery.web.controller;
+package guru.springframework.msscbrewery.web.controller.v2;
 
-import guru.springframework.msscbrewery.web.model.BeerDto;
-import guru.springframework.msscbrewery.service.BeerService;
+import guru.springframework.msscbrewery.service.v2.BeerServiceV2;
+import guru.springframework.msscbrewery.web.model.v2.BeerDtoV2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,27 +9,27 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
-@RequestMapping("api/v1/beer")
+@RequestMapping("api/v2/beer")
 @RestController
-public class BeerController {
+public class BeerControllerV2 {
 
-    private BeerService beerService;
+    private BeerServiceV2 beerService;
 
-    private static final String REQUEST_MAPPING = "api/v1/beer";
+    private static final String REQUEST_MAPPING = "api/v2/beer";
 
-    public BeerController(BeerService beerService) {
+    public BeerControllerV2(BeerServiceV2 beerService) {
         this.beerService = beerService;
     }
 
     @GetMapping("/{beerId}")
-    public ResponseEntity<BeerDto> getBeer(@PathVariable("beerId") UUID beerId) {
-        return new ResponseEntity<BeerDto>(beerService.getBeerById(beerId), HttpStatus.OK);
+    public ResponseEntity<BeerDtoV2> getBeer(@PathVariable("beerId") UUID beerId) {
+        return new ResponseEntity<BeerDtoV2>(beerService.getBeerById(beerId), HttpStatus.OK);
 
     }
 
     @PostMapping
-    public ResponseEntity handlePost(@RequestBody BeerDto beerDto) {
-        BeerDto savedDto = beerService.saveBeer(beerDto);
+    public ResponseEntity handlePost(@RequestBody BeerDtoV2 BeerDtoV2) {
+        BeerDtoV2 savedDto = beerService.saveBeer(BeerDtoV2);
         HttpHeaders httpHeaders = new HttpHeaders();
         // Convention returning the path where to access the resource
         httpHeaders.add("Location", REQUEST_MAPPING + "/" + savedDto.getId().toString());
@@ -37,8 +37,8 @@ public class BeerController {
     }
 
     @PutMapping("/{beerId}")
-    public ResponseEntity<BeerDto> handleUpdate(@PathVariable UUID beerId, @RequestBody BeerDto beerDto) {
-        beerService.updateBeer(beerId, beerDto);
+    public ResponseEntity<BeerDtoV2> handleUpdate(@PathVariable UUID beerId, @RequestBody BeerDtoV2 BeerDtoV2) {
+        beerService.updateBeer(beerId, BeerDtoV2);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
