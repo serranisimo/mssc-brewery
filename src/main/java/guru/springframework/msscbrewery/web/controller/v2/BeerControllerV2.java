@@ -4,11 +4,19 @@ import guru.springframework.msscbrewery.service.v2.BeerServiceV2;
 import guru.springframework.msscbrewery.web.model.v2.BeerDtoV2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.ConstraintViolationException;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+@Validated // For Method Input validation
 @RequestMapping("api/v2/beer")
 @RestController
 public class BeerControllerV2 {
@@ -22,13 +30,13 @@ public class BeerControllerV2 {
     }
 
     @GetMapping("/{beerId}")
-    public ResponseEntity<BeerDtoV2> getBeer(@PathVariable("beerId") UUID beerId) {
+    public ResponseEntity<BeerDtoV2> getBeer(@NotNull @PathVariable("beerId") UUID beerId) {
         return new ResponseEntity<BeerDtoV2>(beerService.getBeerById(beerId), HttpStatus.OK);
 
     }
 
     @PostMapping
-    public ResponseEntity handlePost(@RequestBody BeerDtoV2 BeerDtoV2) {
+    public ResponseEntity handlePost( @Valid @NotNull @RequestBody BeerDtoV2 BeerDtoV2) {
         BeerDtoV2 savedDto = beerService.saveBeer(BeerDtoV2);
         HttpHeaders httpHeaders = new HttpHeaders();
         // Convention returning the path where to access the resource
@@ -37,7 +45,7 @@ public class BeerControllerV2 {
     }
 
     @PutMapping("/{beerId}")
-    public ResponseEntity<BeerDtoV2> handleUpdate(@PathVariable UUID beerId, @RequestBody BeerDtoV2 BeerDtoV2) {
+    public ResponseEntity<BeerDtoV2> handleUpdate(@PathVariable UUID beerId, @Valid @RequestBody BeerDtoV2 BeerDtoV2) {
         beerService.updateBeer(beerId, BeerDtoV2);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -47,6 +55,13 @@ public class BeerControllerV2 {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void handleDelete(@PathVariable UUID beerId) {
         beerService.deleteBeerById(beerId);
+    }
+
+    @ExceptionHandler(ConstraintViolationException.class) // for Bean validation
+    public ResponseEntity<List> validationErrorHandler(ConstraintViolationException e){
+        List<String> errors = new ArrayList(e.getConstraintViolations());
+        e.getConstraintViolations().forEach(constraintViolation -> errors.add(constraintViolation.getPropertyPath() + ": "+ constraintViolation.getMessage()));
+        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
     }
 
 }

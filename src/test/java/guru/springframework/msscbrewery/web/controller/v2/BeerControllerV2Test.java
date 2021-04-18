@@ -1,9 +1,13 @@
-package guru.springframework.msscbrewery.web.controller;
+package guru.springframework.msscbrewery.web.controller.v2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import guru.springframework.msscbrewery.service.BeerService;
+import guru.springframework.msscbrewery.service.v2.BeerServiceV2;
+import guru.springframework.msscbrewery.web.controller.BeerController;
 import guru.springframework.msscbrewery.web.model.BeerDto;
+import guru.springframework.msscbrewery.web.model.v2.BeerDtoV2;
+import guru.springframework.msscbrewery.web.model.v2.BeerStyleEnum;
 import org.hamcrest.core.Is;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,14 +28,14 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(BeerController.class)
+@WebMvcTest(BeerControllerV2.class)
 @ExtendWith({SpringExtension.class})
-class BeerControllerTest {
+class BeerControllerV2Test {
 
-    public static final String API_V_1_BEER = "/api/v1/beer/";
+    public static final String API_V_2_BEER = "/api/v2/beer/";
 
     @MockBean
-    BeerService beerService;
+    BeerServiceV2 beerService;
 
     @Autowired
     MockMvc mockMvc;
@@ -39,19 +43,19 @@ class BeerControllerTest {
     @Autowired
     ObjectMapper objectMapper;
 
-    BeerDto validBeer;
+    BeerDtoV2 validBeer;
 
     @BeforeEach
     void setUp() {
-        validBeer = BeerDto.builder()
-                .id(UUID.randomUUID()).beerName("Test Beer").beerStyle("Pale Test").upc(81364232l).build();
+        validBeer = BeerDtoV2.builder()
+                .id(UUID.randomUUID()).beerName("Test Beer").beerStyle(BeerStyleEnum.ALE).upc(81364232l).build();
     }
 
     @Test
     void getBeer() throws Exception {
         given(beerService.getBeerById(any(UUID.class))).willReturn(validBeer);
 
-        mockMvc.perform(get(API_V_1_BEER + validBeer.getId())
+        mockMvc.perform(get(API_V_2_BEER + validBeer.getId())
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.beerName", Is.is(validBeer.getBeerName())))
                 .andExpect(jsonPath("$.id", Is.is(validBeer.getId().toString())));
@@ -60,16 +64,15 @@ class BeerControllerTest {
 
     @Test
     void handlePost() throws JsonProcessingException {
-        BeerDto beerDto = validBeer;
+        BeerDtoV2 beerDto = validBeer;
         beerDto.setId(null);
-        BeerDto savedDto = BeerDto.builder().id(UUID.randomUUID()).beerName("New Beer").build();
+        BeerDtoV2 savedDto = BeerDtoV2.builder().id(UUID.randomUUID()).beerName("New Beer").build();
         String beerDtoToJson = objectMapper.writeValueAsString(beerDto);
 
         given(beerService.saveBeer(any())).willReturn(savedDto);
 
         try {
-            mockMvc.perform(
-                    post(API_V_1_BEER).contentType(MediaType.APPLICATION_JSON).content(beerDtoToJson)
+            mockMvc.perform(post(API_V_2_BEER).contentType(MediaType.APPLICATION_JSON).content(beerDtoToJson)
             ).andExpect(status().isCreated());
         } catch (Exception e) {
             e.printStackTrace();
@@ -80,13 +83,13 @@ class BeerControllerTest {
     void handleUpdate() throws Exception {
 
         //given
-        BeerDto beerDto = validBeer;
+        BeerDtoV2 beerDto = validBeer;
         UUID id = validBeer.getId();
         validBeer.setId(null);
         String beerDtoJson = objectMapper.writeValueAsString(beerDto);
 
         //when
-        mockMvc.perform(put(API_V_1_BEER + id)
+        mockMvc.perform(put(API_V_2_BEER + id)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(beerDtoJson))
                 .andExpect(status().isNoContent());
