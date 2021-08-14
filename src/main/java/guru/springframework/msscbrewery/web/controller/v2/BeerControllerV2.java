@@ -2,6 +2,9 @@ package guru.springframework.msscbrewery.web.controller.v2;
 
 import guru.springframework.msscbrewery.service.v2.BeerServiceV2;
 import guru.springframework.msscbrewery.web.model.v2.BeerDtoV2;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,28 +15,26 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.UUID;
 
+@Slf4j
+@RequiredArgsConstructor // fields must be final or @NoneNull
 @Validated // For Method Input validation
 @RequestMapping("api/v2/beer")
 @RestController
 public class BeerControllerV2 {
 
-    private BeerServiceV2 beerService;
+    private final BeerServiceV2 beerService;
 
     private static final String REQUEST_MAPPING = "api/v2/beer";
-
-    public BeerControllerV2(BeerServiceV2 beerService) {
-        this.beerService = beerService;
-    }
 
     @GetMapping("/{beerId}")
     public ResponseEntity<BeerDtoV2> getBeer(@NotNull @PathVariable("beerId") UUID beerId) {
         return new ResponseEntity<BeerDtoV2>(beerService.getBeerById(beerId), HttpStatus.OK);
-
     }
 
     @PostMapping
     public ResponseEntity handlePost( @Valid @NotNull @RequestBody BeerDtoV2 BeerDtoV2) {
-        BeerDtoV2 savedDto = beerService.saveBeer(BeerDtoV2);
+        log.debug("in handle post...");
+        val savedDto = beerService.saveBeer(BeerDtoV2);
         HttpHeaders httpHeaders = new HttpHeaders();
         // Convention returning the path where to access the resource
         httpHeaders.add("Location", REQUEST_MAPPING + "/" + savedDto.getId().toString());
@@ -52,5 +53,4 @@ public class BeerControllerV2 {
     public void handleDelete(@PathVariable UUID beerId) {
         beerService.deleteBeerById(beerId);
     }
-
 }
